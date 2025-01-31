@@ -1,16 +1,19 @@
 import csv
 import sys
 from datetime import datetime
-from io import TextIOWrapper
+from io import StringIO
 
 from icalendar import Calendar, Event
 
 
 # Function to parse the CSV from stdin and extract relevant data
-def process_csv(input_file):
+def process_csv(file_content: bytes):
     """Process CSV file-like object and return contacts"""
     contacts = []
-    reader = csv.DictReader(TextIOWrapper(input_file, encoding='utf-8'))
+
+    text_stream = StringIO(file_content.decode('utf-8'))
+    reader = csv.DictReader(text_stream)
+
     for row in reader:
         # Extract first name, last name, and birthday
         first_name = row.get('First Name', '').strip()
