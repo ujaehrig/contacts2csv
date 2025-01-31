@@ -1,16 +1,16 @@
-#!/usr/bin/env -S uv run --script
-
 import csv
 import sys
 from datetime import datetime
+from io import TextIOWrapper
 
 from icalendar import Calendar, Event
 
 
 # Function to parse the CSV from stdin and extract relevant data
-def parse_contacts_csv(input):
+def process_csv(input_file):
+    """Process CSV file-like object and return contacts"""
     contacts = []
-    reader = csv.DictReader(input)
+    reader = csv.DictReader(TextIOWrapper(input_file, encoding='utf-8'))
     for row in reader:
         # Extract first name, last name, and birthday
         first_name = row.get('First Name', '').strip()
@@ -25,8 +25,9 @@ def parse_contacts_csv(input):
             )
     return contacts
 
-# Function to create an iCal file and write it to stdout
-def create_ical_file(contacts):
+
+def generate_ical(contacts):
+    """Generate iCal data from contacts"""
     cal = Calendar()
 
     for contact in contacts:
@@ -53,24 +54,4 @@ def create_ical_file(contacts):
             except ValueError:
                 print(f"Skipping invalid birthday format for {contact['first_name']} {contact['last_name']}: {contact['birthday']}", file=sys.stderr)
 
-    # Write the calendar to stdout
-    sys.stdout.buffer.write(cal.to_ical())
-
-# Main function
-def main():
-    stream = sys.stdin
-
-    if len(sys.argv) > 1:
-        stream = open(sys.argv[1], 'r')
-
-    # Parse the CSV from stdin
-    contacts = parse_contacts_csv(stream)
-
-    # Create the iCal file and write it to stdout
-    create_ical_file(contacts)
-
-    if stream is not sys.stdin:
-        stream.close()
-
-if __name__ == '__main__':
-    main()
+    return cal.to_ical()

@@ -1,4 +1,7 @@
-.idea
+.idea/
+package/
+packages/
+
 
 contacts.csv
 birthdays.ical
