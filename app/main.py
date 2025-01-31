@@ -22,13 +22,20 @@ async def upload_form(request: Request):
 
 
 @app.post("/process/")
-async def process_file(file: UploadFile = File(...)):
-    contacts = csv2ical.process_csv(file.file)
-    return Response(
-        content=csv2ical.generate_ical(contacts),
-        media_type="text/calendar",
-        headers={"Content-Disposition": "attachment; filename=birthdays.ical"}
-    )
+async def process_file(request: Request, file: UploadFile = File(...)):
+    try:
+        content = await file.read()
+        contacts = csv2ical.process_csv(content)
+        return Response(
+            content=csv2ical.generate_ical(contacts),
+            media_type="text/calendar",
+            headers={"Content-Disposition": "attachment; filename=birthdays.ical"}
+        )
+    except Exception as e:
+        return templates.TemplateResponse("error.html", {
+            "request": request,
+            "error_message": str(e)
+        }, status_code=400)
 
 
 if __name__ == "__main__":
