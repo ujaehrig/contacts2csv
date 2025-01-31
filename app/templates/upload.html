@@ -42,6 +42,15 @@
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        .file-name-display {
+            animation: slideUp 0.3s ease-out;
+            margin-top: 1rem;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body class="gradient-bg min-vh-100">
@@ -123,17 +132,72 @@
         dropZone.classList.remove('dragover');
     });
 
+    // Modified Drag & Drop functionality
     dropZone.addEventListener('drop', (e) => {
         e.preventDefault();
         dropZone.classList.remove('dragover');
         fileInput.files = e.dataTransfer.files;
+        updateFileNameDisplay();
     });
 
+    let currentFileName = null;
+
+    // Add file input change listener
+    fileInput.addEventListener('change', updateFileNameDisplay);
+
+    function updateFileNameDisplay() {
+        const file = fileInput.files[0];
+        if (file) {
+            currentFileName = file.name;
+            const fileNameDisplay = document.getElementById('fileNameDisplay') || createFileNameDisplay();
+            fileNameDisplay.textContent = `Selected file: ${currentFileName}`;
+        }
+    }
+
+    function createFileNameDisplay() {
+        const fileNameDiv = document.createElement('div');
+        fileNameDiv.id = 'fileNameDisplay';
+        fileNameDiv.className = 'mt-3 text-success fw-bold';
+        dropZone.parentNode.insertBefore(fileNameDiv, dropZone.nextSibling);
+        return fileNameDiv;
+    }
+
     // Loading state
-    document.getElementById('uploadForm').addEventListener('submit', () => {
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
         const btn = document.querySelector('button[type="submit"]');
-        btn.innerHTML = `<i class="fas fa-spinner fa-spin me-2"></i> Processing...`;
-        btn.disabled = true;
+        const originalBtnHTML = btn.innerHTML;
+
+        try {
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin me-2"></i> Processing...`;
+            btn.disabled = true;
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            const response = await fetch('/process/', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) throw new Error(await response.text());
+
+            // Trigger file download
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'birthdays.ical';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } catch (error) {
+            alert(`Error: ${error.message}`);
+        } finally {
+            btn.innerHTML = originalBtnHTML;
+            btn.disabled = false;
+        }
     });
 </script>
 </body>
