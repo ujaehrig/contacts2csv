@@ -18,6 +18,15 @@
         .animate-fade-in { animation: fadeIn 0.5s ease-in; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
+        #filenameDisplay {
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         /* Add HTMX-specific styles */
         .htmx-indicator { opacity: 0; transition: opacity 200ms ease-in; }
         .htmx-request .htmx-indicator { opacity: 1; }
@@ -45,7 +54,8 @@
               hx-post="/process/"
               hx-target="#result"
               hx-encoding="multipart/form-data"
-              _="on dragover add .dragover to .drag-drop-area
+              _="on htmx:afterRequest reset() me except input
+                     dragover add .dragover to .drag-drop-area
                      on dragleave remove .dragover from .drag-drop-area
                      on drop remove .dragover from .drag-drop-area">
 
@@ -68,6 +78,12 @@
                         </label>
                     </div>
                 </div>
+            </div>
+
+            <!-- Add this right after the drag-drop-area div -->
+            <div id="filenameDisplay" class="mt-3 text-success fw-bold" style="display: none;">
+                <i class="fas fa-file-csv me-2"></i>
+                <span id="selectedFilename"></span>
             </div>
 
             <div class="premium-feature">
@@ -106,6 +122,42 @@
 </div>
 
 <script>
+    // File selection handlers
+    document.addEventListener('DOMContentLoaded', () => {
+        const fileInput = document.querySelector('input[type="file"]');
+        const filenameDisplay = document.getElementById('filenameDisplay');
+        const selectedFilename = document.getElementById('selectedFilename');
+
+        // Update display when file is selected
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                selectedFilename.textContent = fileInput.files[0].name;
+                filenameDisplay.style.display = 'block';
+            }
+        });
+
+        // Drag and drop handlers
+        const dropZone = document.getElementById('dropZone');
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            fileInput.files = e.dataTransfer.files;
+            selectedFilename.textContent = fileInput.files[0].name;
+            filenameDisplay.style.display = 'block';
+        });
+    });
+
+    // Download trigger function (keep existing)
     function triggerDownload(dataUrl, filename) {
         const a = document.createElement('a');
         a.href = dataUrl;
