@@ -20,6 +20,24 @@
 
         #filenameDisplay {
             animation: slideUp 0.3s ease-out;
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: rgba(25, 135, 84, 0.1);
+            border-radius: 0.25rem;
+        }
+
+        #filenameDisplay button {
+            padding: 0.15rem 0.35rem;
+            line-height: 1;
+            vertical-align: middle;
+            transition: all 0.2s ease;
+        }
+
+        #filenameDisplay button:hover {
+            background-color: #dc3545;
+            color: white;
         }
 
         @keyframes slideUp {
@@ -80,10 +98,14 @@
                 </div>
             </div>
 
-            <!-- Add this right after the drag-drop-area div -->
             <div id="filenameDisplay" class="mt-3 text-success fw-bold" style="display: none;">
                 <i class="fas fa-file-csv me-2"></i>
                 <span id="selectedFilename"></span>
+                <button class="btn btn-sm btn-outline-danger ms-2"
+                        onclick="clearFileSelection()"
+                        title="Remove file">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
 
             <div class="premium-feature">
@@ -133,6 +155,8 @@
             if (fileInput.files.length > 0) {
                 selectedFilename.textContent = fileInput.files[0].name;
                 filenameDisplay.style.display = 'block';
+            } else {
+                clearFileSelection();
             }
         });
 
@@ -153,7 +177,7 @@
             dropZone.classList.remove('dragover');
             fileInput.files = e.dataTransfer.files;
             selectedFilename.textContent = fileInput.files[0].name;
-            filenameDisplay.style.display = 'block';
+            filenameDisplay.style.display = 'flex';
         });
     });
 
@@ -165,6 +189,22 @@
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
+    }
+
+    function clearFileSelection() {
+        const fileInput = document.querySelector('input[type="file"]');
+        const filenameDisplay = document.getElementById('filenameDisplay');
+        const selectedFilename = document.getElementById('selectedFilename');
+
+        // Reset file input
+        fileInput.value = '';
+
+        // Clear display
+        selectedFilename.textContent = '';
+        filenameDisplay.style.display = 'none';
+
+        // Optional: Reset the form state
+        document.getElementById('uploadForm').reset();
     }
 </script>
 </body>
