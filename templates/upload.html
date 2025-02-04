@@ -45,6 +45,25 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        #convertButton {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        #convertButton[style*="display: block"] {
+            animation: buttonAppear 0.3s ease;
+        }
+
+        @keyframes buttonAppear {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         /* Add HTMX-specific styles */
         .htmx-indicator { opacity: 0; transition: opacity 200ms ease-in; }
         .htmx-request .htmx-indicator { opacity: 1; }
@@ -117,7 +136,9 @@
                 </ul>
             </div>
 
-            <button type="submit" class="btn btn-success btn-lg w-100">
+            <button type="submit" class="btn btn-success btn-lg w-100"
+                    id="convertButton"
+                    style="display: none;">
                 <i class="fas fa-magic me-2"></i>
                 Convert Now
             </button>
@@ -154,7 +175,8 @@
         fileInput.addEventListener('change', () => {
             if (fileInput.files.length > 0) {
                 selectedFilename.textContent = fileInput.files[0].name;
-                filenameDisplay.style.display = 'block';
+                filenameDisplay.style.display = 'flex';
+                document.getElementById('convertButton').style.display = 'block';
             } else {
                 clearFileSelection();
             }
@@ -176,8 +198,11 @@
             e.preventDefault();
             dropZone.classList.remove('dragover');
             fileInput.files = e.dataTransfer.files;
-            selectedFilename.textContent = fileInput.files[0].name;
-            filenameDisplay.style.display = 'flex';
+            if (fileInput.files.length > 0) {
+                selectedFilename.textContent = fileInput.files[0].name;
+                filenameDisplay.style.display = 'flex';
+                document.getElementById('convertButton').style.display = 'block';
+            }
         });
     });
 
@@ -195,6 +220,7 @@
         const fileInput = document.querySelector('input[type="file"]');
         const filenameDisplay = document.getElementById('filenameDisplay');
         const selectedFilename = document.getElementById('selectedFilename');
+        const convertButton = document.getElementById('convertButton');
 
         // Reset file input
         fileInput.value = '';
@@ -202,6 +228,7 @@
         // Clear display
         selectedFilename.textContent = '';
         filenameDisplay.style.display = 'none';
+        convertButton.style.display = 'none';
 
         // Optional: Reset the form state
         document.getElementById('uploadForm').reset();
